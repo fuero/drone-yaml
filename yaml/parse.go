@@ -26,6 +26,9 @@ import (
 )
 
 var errorMissingKind = errors.New("yaml: missing kind attribute")
+// Set buffer size to 4 MB from a measly 64K default.
+const maxCapacity = 4 * 1024 * 1024
+var buf = make([]byte, maxCapacity)
 
 // Parse parses the configuration from io.Reader r.
 func Parse(r io.Reader) (*Manifest, error) {
@@ -103,6 +106,7 @@ func ParseRaw(r io.Reader) ([]*RawResource, error) {
 	var resource *RawResource
 
 	scanner := bufio.NewScanner(r)
+	scanner.Buffer(buf, maxCapacity)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if isSeparator(line) {
